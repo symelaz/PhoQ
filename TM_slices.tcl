@@ -3,11 +3,15 @@
 # 1 --> dcd file of the trajectory
 # 2 --> pdb file of the reference frame
 # 3 --> Output file to be written
-# 4 --> True if AlphaFold model
+# 4 --> path for la1.0 library
+# 5 --> path for orient library
+
+# Set the points that define the slices for TM domain 
+set points {28 202 21 210 36 194}
 
 # Required libraries for the principle component analysis
-lappend auto_path /home/symela/Documents/Symela/PhD/Project/PhoQ/PhoQ/Analysis/SD_AcidicPatch_Angle_Membrane/utils/la1.0
-lappend auto_path /home/symela/Documents/Symela/PhD/Project/PhoQ/PhoQ/Analysis/SD_AcidicPatch_Angle_Membrane/utils/orient
+lappend auto_path [lindex $argv 4]
+lappend auto_path [lindex $argv 5]
 
 package require Orient
 namespace import Orient::orient
@@ -74,42 +78,15 @@ proc get_rotation_matrix_to_z {vector} {
 
 	# Define the rotation matrix around the z-axis
 	set rotation_matrix [list [list $c -$s 0 0] [list $s $c 0 0] [list 0 0 1 0] [list 0 0 0 1]]
-	return [list $rotation_matrix [radians_to_degrees $angle]]
+	return $rotation_matrix
 }
 
-proc get_z {point_A point_B fr segname} {
-	
-	set a [atomselect top "protein and segname ${segname}1 and resid $point_A and name CA" frame $fr]
-        set b [atomselect top "protein and segname ${segname}1 and resid $point_B and name CA" frame $fr]
-        set c [atomselect top "protein and segname ${segname}2 and resid $point_A and name CA" frame $fr]
-        set d [atomselect top "protein and segname ${segname}2 and resid $point_B and name CA" frame $fr]
+proc write_coordinates_to_file {point_A point_B fr segnames outfile angle dz} {
 
-        set za [$a get z]
-        set zb [$b get z]
-        set zc [$c get z]
-        set zd [$d get z]
-
-	return [list $za $zb $zc $zd]
-}
-
-proc get_Dz {znew zold} {
-	
-	foreach i {0 1 2 3} {
-		set z1 [lindex $zold $i]
-		set z2 [lindex $znew $i]
-		set dz [expr $z2 - $z1]
-		lappend zfinal $dz
-	}
-
-	return $zfinal
-}
-	
-proc write_coordinates_to_file {point_A point_B fr segname outfile angle dz} {
-
-	set a [atomselect top "protein and segname ${segname}1 and resid $point_A and name CA" frame $fr]
-        set b [atomselect top "protein and segname ${segname}1 and resid $point_B and name CA" frame $fr]
-        set c [atomselect top "protein and segname ${segname}2 and resid $point_A and name CA" frame $fr]
-        set d [atomselect top "protein and segname ${segname}2 and resid $point_B and name CA" frame $fr]
+	set a [atomselect top "protein and segname [lindex $segname 0] and resid $point_A and name CA" frame $fr]
+        set b [atomselect top "protein and segname [lindex $segname 0] and resid $point_B and name CA" frame $fr]
+        set c [atomselect top "protein and segname [lindex $segname 1] and resid $point_A and name CA" frame $fr]
+        set d [atomselect top "protein and segname [lindex $segname 1] and resid $point_B and name CA" frame $fr]
 	
 	set coma [$a get {x y z}]
         set comb [$b get {x y z}]
@@ -121,10 +98,10 @@ proc write_coordinates_to_file {point_A point_B fr segname outfile angle dz} {
         set discd [point_to_point_distance $comc $comd]
         set disda [point_to_point_distance $comd $coma]
 
-        puts $outfile "$point_A $point_B $fr [lindex $coma 0] [lindex $comb 0] [lindex $comc 0] [lindex $comd 0] $disab $disbc $discd $disda $angle [lindex $dz 0] [lindex $dz 1] [lindex $dz 2] [lindex $dz 3] "
+        puts $outfile "$point_A $point_B $fr [lindex $coma 0] [lindex $comb 0] [lindex $comc 0] [lindex $comd 0] $disab $disbc $discd $disda"
 }
 
-proc get_slice {point_A point_B nf segname outfile} {
+proc get_slice {point_A point_B nf segnames outfile} {
 	
 	# Get the reference slice
 	set slice_ref [atomselect 0 "protein and resid $point_A $point_B and name CA"] 
@@ -138,9 +115,6 @@ proc get_slice {point_A point_B nf segname outfile} {
 		# Define the selection frame
 		$slice frame $fr
 		
-		# Get z coordinates of the 4-points defining the slice before the transformation
-		set Z_old [get_z $point_A $point_B $fr $segname]
-
 		# Align the slice to the zero frame
 		set trans_mat [measure fit $slice $slice_ref]
 		$slice move $trans_mat
@@ -150,38 +124,24 @@ proc get_slice {point_A point_B nf segname outfile} {
 		set slice_axis [draw principalaxes $slice]
 		set vector [lindex $slice_axis 0]
 		
-		# Get rotation matrix of the vector and the tilt angle
-		set output [get_rotation_matrix_to_z $vector]
-		set angle [lindex $output 1]
-
-		# Move selection based on the rotation matrix
-		set rotation_matrix [lindex $output 0]
-		$slice move $rotation_matrix
-		
-		# Get z coordinates of the 4-points defining the slice before the transformation
-                set Z_new [get_z $point_A $point_B $fr $segname]
-		
-		# Get Dz 
-		set dz [get_Dz $Z_new $Z_old]
+		# Get rotation matrix of the vector and move selection
+		set rotation_matrix [get_rotation_matrix_to_z $vector]
+  		$slice move $rotation_matrix
 		
 		# Save the coordinates to a file
-		write_coordinates_to_file $point_A $point_B $fr $segname $outfile $angle $dz
+		write_coordinates_to_file $point_A $point_B $fr $segnames $outfile
 	}
 }
 
 # Load reference molecule
 mole new [lindex $argv 2]
 
-# Set the points that define the slices for TM domain 
-set points {28 202 21 210 36 194}
-
 # Load Trajectory
 mol new [lindex $argv 0] type psf
 mol addfile [lindex $argv 1] type dcd first 0 last -1 step 1 waitfor all
 
 # Get segname
-set af [lindex $argv 4]
-if $af {set segname "XP"} else {set segname "PP"}
+set segnames [lsort -uniq [[atomselect top "protein"] get segname]]
 
 # Get number of Frames of the simulation
 set nf [molinfo top get numframes]
@@ -189,12 +149,12 @@ set nf [molinfo top get numframes]
 # Prepare output file to be written
 set output_file [lindex $argv 3]
 set outfile [open $output_file w]
-puts $outfile "PointA PointB Frame Ax Ay Az Bx By Bz Cx Cy Cz Dx Dy Dz ab bc cd da AngleTilt DzA DzB DzC DzD"
+puts $outfile "PointA PointB Frame Ax Ay Az Bx By Bz Cx Cy Cz Dx Dy Dz ab bc cd da"
 
 # Compute the positions of all slices 
 foreach {i j} $points {
 	puts "================================ Running for slice $i - $j ================================"
-	get_slice $i $j $nf $segname $outfile
+	get_slice $i $j $nf $segnames $outfile
 }
 
 # Close the output file
