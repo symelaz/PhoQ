@@ -83,10 +83,10 @@ proc get_rotation_matrix_to_z {vector} {
 
 proc write_coordinates_to_file {point_A point_B fr segnames outfile angle dz} {
 
-	set a [atomselect top "protein and segname [lindex $segname 0] and resid $point_A and name CA" frame $fr]
-        set b [atomselect top "protein and segname [lindex $segname 0] and resid $point_B and name CA" frame $fr]
-        set c [atomselect top "protein and segname [lindex $segname 1] and resid $point_A and name CA" frame $fr]
-        set d [atomselect top "protein and segname [lindex $segname 1] and resid $point_B and name CA" frame $fr]
+	set a [atomselect top "protein and segname [lindex $segnames 0] and resid $point_A and name CA" frame $fr]
+        set b [atomselect top "protein and segname [lindex $segnames 0] and resid $point_B and name CA" frame $fr]
+        set c [atomselect top "protein and segname [lindex $segnames 1] and resid $point_A and name CA" frame $fr]
+        set d [atomselect top "protein and segname [lindex $segnames 1] and resid $point_B and name CA" frame $fr]
 	
 	set coma [$a get {x y z}]
         set comb [$b get {x y z}]
