@@ -30,17 +30,12 @@ def read_data(filename):
 
 ############################### Inputs ################################
 
-folder = "/home/symela/Documents/Symela/PhD/Project/PhoQ/PhoQ/Analysis/CrossLinking"
-
-exp_file = os.path.join(folder, "ExperimentalData-Cross-Linking/BayesianModeling/modeling/data/expcrosslink_full.dat")
+exp_file = "Outputs/expcrosslink_full.dat"
 cross_full = plot_crosslinking(exp_file)
 
-af_full = read_data(os.path.join(folder, "CrossLinking_phoqaf_replicas.dat"))
-c_full = read_data(os.path.join(folder, "CrossLinking_phoqc_replicas.dat"))
-
-# Read AlphaFold predicted structure
-os.system("vmd -dispdev text -e cross_linking_AF_predicted.tcl -args /home/symela/Documents/Symela/PhD/Project/PhoQ/PhoQ/phoq_af_model.pdb AF_predicted.dat > logs")
-af_predicted = pd.read_csv("AF_predicted.dat", header=None, names=["Resid", "Mean"])
+af_full = read_data("Outputs/CrossLinking_phoqaf_replicas.dat") # AlphaFold simulation
+c_full = read_data("Outputs/CrossLinking_phoqc_replicas.dat") # Hybrid with TMD simulation
+af_predicted = pd.read_csv("AF_predicted.dat", header=None, names=["Resid", "Mean"]) # AlphaFold predicted structure data
 af_predicted["STD"] = 0
 
 
@@ -81,7 +76,7 @@ if inv:
     ax2.set_xlim(exp[0].astype(int).max() + 1, exp[0].astype(int).min() - 1)
 ax1.legend()
 ax2.legend()
-plt.savefig("TM2+HAMP.svg", transparent=True)
+plt.savefig("TM2+HAMP.png")
 
 
 ####################### SD interface + TM1 plot #######################
@@ -119,5 +114,5 @@ if inv:
     ax2.set_xlim(exp[0].astype(int).max() + 1, exp[0].astype(int).min() - 1)
 ax1.legend()
 ax2.legend()
-plt.savefig("TM1+SensorInterface.svg", transparent=True)
+plt.savefig("TM1+SensorInterface.png")
 
