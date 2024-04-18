@@ -35,7 +35,7 @@ cross_full = plot_crosslinking(exp_file)
 
 af_full = read_data("Outputs/CrossLinking_phoqaf_replicas.dat") # AlphaFold simulation
 c_full = read_data("Outputs/CrossLinking_phoqc_replicas.dat") # Hybrid with TMD simulation
-af_predicted = pd.read_csv("AF_predicted.dat", header=None, names=["Resid", "Mean"]) # AlphaFold predicted structure data
+af_predicted = pd.read_csv("Outputs/AF_predicted.dat", header=None, names=["Resid", "Mean"]) # AlphaFold predicted structure data
 af_predicted["STD"] = 0
 
 
