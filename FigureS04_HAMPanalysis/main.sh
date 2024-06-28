@@ -4,7 +4,7 @@
 bash utils/prepare_structures.sh
 
 # Folder with all the HAMP structures
-structures=HAMPpred/data/input/struct_in/multimers
+structures=struct_in/multimers
 
 # Create a directory to save all the intermediate steps of FoldSeek search
 mkdir -p Foldseek/Multimer/{Target,Query,Alignment,MSA}
