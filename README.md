@@ -8,3 +8,6 @@ Each Folder contains:
 1. Tcl Scripts used to extract information from simulations
 2. Outputs folder with the raw data extracted from the simulations
 3. Python and Jupyter-notebooks to plot and analyze the data
+
+## Publication
+[Symela Lazaridi, Jing Juan and Thomas Lemmin, Atomic insights into the signaling landscape of _E. coli_ PhoQ Histidine Kinase from Molecular Dynamics simulations, bioRxiv 2024.04.19.590235; doi: https://doi.org/10.1101/2024.04.19.590235](https://www.biorxiv.org/content/10.1101/2024.04.19.590235v1)
