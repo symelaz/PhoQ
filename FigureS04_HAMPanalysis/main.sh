@@ -25,3 +25,6 @@ foldseek result2msa Foldseek/Multimer/Query/queryDB Foldseek/Multimer/Target/tar
 foldseek unpackdb Foldseek/Multimer/MSA/msa Foldseek/Multimer/MSA/msa_output --unpack-suffix .a3m --unpack-name-mode 0 > log
 
 rm log
+
+# Run pca analysis
+python utils/pca_analysis.py
